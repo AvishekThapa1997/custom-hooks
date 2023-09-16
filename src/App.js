@@ -32,6 +32,7 @@ function App() {
       validation:[() => {},() => {}]
     }
   });
+  console.log('ss');
   // const lastElementRef = usePageBottom();
   // const cb = (node) => {
   //   if(!node) return;
