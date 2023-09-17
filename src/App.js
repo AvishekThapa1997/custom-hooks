@@ -1,83 +1,71 @@
-// import usePageBottom from "./hooks/usePageBottom";
+// import Child from './components/class/Child';
+// import Counter from './components/class/Counter';
+// import Errorboundary from './components/class/ErrorBoundary';
+// import Parent from './components/class/Parent';
 
-import Form from "./components/Form";
-import useForm from "./hooks/useForm";
+import { Suspense, useCallback, useState, lazy } from 'react';
+// import Items from './components/functional/Items';
 
-// const items = Array(20).fill('');
-const inputFields = [
-    {
-      id:'email',
-      name:'email',
-      type:'email',
-      placeholder:'email',
-      label:'email'
-    },
-    {
-      id:'password',
-      name:'password',
-      type:'password',
-      placeholder:'password',
-      label:'password'
-    },
-  ]
-function App() {
+const Items = lazy(() =>
+  import('./components/functional/Items' /* webpackChunkName: "items" */)
+);
 
-  const {formValues,handleSubmit,handleInputChange} = useForm({
-    email:{
-      value:'',
-      validation : [()=>{},()=>{}]
-    },
-    password:{
-      value:'',
-      validation:[() => {},() => {}]
-    }
+function wait(delay) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(), delay);
   });
-  console.log('ss');
-  // const lastElementRef = usePageBottom();
-  // const cb = (node) => {
-  //   if(!node) return;
-  //   console.log(node.lastElementChild);
-  //   lastElementRef.current = node.lastElementChild;
-  // }
-  /*LAST PAGE BOTTOM*/
-  // return (
-  //   <div className="App" style={{
-  //     overflow:'hidden'
-  //   }}>
-  //     <ul ref={cb} style={{
-  //       height:'20rem',
-  //       overflow:'auto'
-        
-  //     }}>
-  //       {items.map((_,index) => {
-  //         return <li key={index}>
-  //             <div  style={{
-  //               padding:'2rem'
-  //             }}> Item - {index+1}</div>
-  //         </li>
-  //       })}
-  //     </ul>
-  //   </div>
-  // );
-
-  
-  function loginSubmitHandler (formData) {
-    console.log(formData);
-  }
-
-  return <div className="h-screen grid place-items-center px-4">
-              <div className="rounded w-full max-w-md shadow shadow-slate-600 py-6 px-4">
-                  <Form onSubmit={handleSubmit(loginSubmitHandler)} submitButtonLabel='login'>
-                    <h3 className="text-center text-2xl capitalize mb-4">login</h3>
-                    {inputFields.map(inputField => {
-                      return <div className="flex gap-2 items-center mb-4 last-of-type:mb-0" key={inputField.id}>
-                                <label className="capitalize basis-1/4 cursor-pointer" htmlFor={inputField.id}>{inputField.label}</label>
-                                <input {...inputField} onChange={handleInputChange} className="basis-3/4 placeholder:capitalize border-2 flex-[8] p-2 rounded outline-none focus:ring-1 ring-slate-500"/>
-                            </div>
-                    })}
-                  </Form>
-            </div>
-        </div>
 }
 
-export default App;
+export default function App() {
+  const [items, setItems] = useState([
+    {
+      id: 1,
+      value: '',
+    },
+    { id: 2, value: '' },
+    { id: 3, value: '' },
+  ]);
+
+  const handleInputChange = useCallback(
+    (id, value) => _handleInputChange(id, value),
+    []
+  );
+  function _handleInputChange(id, value) {
+    setItems((prevItems) =>
+      prevItems.map((item) => {
+        if (item.id === id) {
+          return {
+            ...item,
+            value,
+          };
+        }
+        return item;
+      })
+    );
+  }
+  return (
+    <div className='h-screen grid place-items-center'>
+      <div className='w-[50rem]'>
+        <p className='text-lg text-center font-bold'>
+          Parents hold the state and passes it to items
+        </p>
+        <p className='text-center font-semibold text-slate-600'></p>
+        <Suspense fallback={<Skeleton />}>
+          <Items items={items} onChange={handleInputChange} />
+        </Suspense>
+      </div>
+    </div>
+  );
+}
+
+function Skeleton() {
+  return (
+    <div className='grid grid-cols-3 gap-4 mt-6'>
+      {Array(3)
+        .fill('')
+        .map((_, index) => (
+          <div key={index} className='h-32 bg-slate-100 animate-pulse'></div>
+        ))}
+    </div>
+  );
+}
